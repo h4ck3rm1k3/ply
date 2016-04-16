@@ -484,8 +484,11 @@ class LRParser:
                             sym.lexpos = t1.lexpos
                             t1 = targ[-1]
                             sym.endlineno = getattr(t1, 'endlineno', t1.lineno)
-                            sym.endlexpos = getattr(t1, 'endlexpos', t1.lexpos)
-                        #--! TRACKING
+                            if 'lexpos' in t1.__dict__:
+                                sym.endlexpos = getattr(t1, 'endlexpos', t1.lexpos)
+                            else:
+                                sym.endlexpos = -1
+                                #--! TRACKING
 
                         # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
                         # The code enclosed in this section is duplicated

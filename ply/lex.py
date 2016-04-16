@@ -40,6 +40,7 @@ import types
 import copy
 import os
 import inspect
+import pprint
 
 # This tuple contains known string types
 try:
@@ -63,7 +64,12 @@ class LexError(Exception):
 # Token class.  This class is used to represent the tokens produced.
 class LexToken(object):
     def __str__(self):
-        return 'LexToken(%s,%r,%d,%d)' % (self.type, self.value, self.lineno, self.lexpos)
+        pprint.pprint(self.__dict__)
+        if 'lexpos' in self.__dict__:
+            return 'LexToken(%s,%r,%d,%d)' % (self.type, self.value, self.lineno, self.lexpos)
+        else:
+            return 'LexToken(%s,%r,%d,%d)' % (self.type, self.value, self.lineno, -1)
+            
 
     def __repr__(self):
         return str(self)

@@ -20,14 +20,23 @@ def foo(self):
     
     s= self.d['extent.start'].split(':')[1]
     k= self.d['kind'].__name__
-    if '/usr/lib/gcc/x86_64-linux-gnu/5/plugin' in s:
+    #if '/usr/lib/gcc/x86_64-linux-gnu/5/plugin' in s:
+    if '/' in s:
         sp= Path(s).parent
-        if sp not in seen:
-            n = cwd  + sp + "/" +k
+        n = cwd  + sp + "/" +k
+        fn = n + "/data.py"
+        mode = 'w'
+        if n not in seen:
             n.makedirs_p()
-            print n
-            seen[s]=1
-            print s
+            seen[n]=1
+            #print s
+            print fn
+        else:
+            mode = 'a' # append
+
+        with open (fn,mode) as f:
+            f.write(pprint.pformat(self.d))
+
     #if 'tree' in self.d['extent.start']:
     #    pprint.pprint(self.d)
 

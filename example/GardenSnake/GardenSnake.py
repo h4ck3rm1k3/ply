@@ -514,6 +514,7 @@ from compiler import ast
 
 # Helper function
 def Assign(left, right):
+    #pprint.pprint({'assignment': right})
     names = []
     if isinstance(left, ast.Name):
         # Single assignment on left
@@ -577,8 +578,8 @@ def p_varargslist(p):
     """varargslist : varargslist COMMA NAME
                    | NAME"""
     if len(p) == 4:
-        pprint.pprint(p)
-        pprint.pprint([p[1], p[3]])
+        #pprint.pprint(p)
+        #pprint.pprint([p[1], p[3]])
         p[1].append(p[3])
         p[0] = p[1]
     else:
@@ -731,8 +732,10 @@ def p_power(p):
         else:
             raise AssertionError("not implemented")
 
+        # a variable name
 def p_atom_name(p):
     """atom : NAME"""
+    #pprint.pprint({"AST.Name":p[1] })
     p[0] = ast.Name(p[1])
 
 def p_atom_number(p):
@@ -759,10 +762,27 @@ def p_atom_list2(p):
 
 def p_dictorsetmaker(p):
     """dictorsetmaker : test COLON test"""
+    p[0] = { p[1].value : p[3]}
 
 def p_dictorsetmaker_list(p):
     """dictorsetmaker : test COLON test COMMA dictorsetmaker"""
+
+    key = p[1].value
     
+    # pprint.pprint(
+    #     {
+    #         "1":key,
+    #         #"2":p[2], :
+    #         "3":p[3],
+    #         #"4":p[4] ,
+    #         "5":p[5] ,
+    #     }
+    # )
+                  
+    f = p[5]
+    f[key]= p[3]
+    p[0] = f
+        
 # | '**' expr
 #                    (comp_for | (',' (test ':' test | '**' expr))* [','])) |
 #                   ((test | star_expr)
@@ -841,7 +861,9 @@ class GardenSnakeParser(object):
 
     def parse(self, code):
         self.lexer.input(code)
-        result = self.parser.parse(lexer = self.lexer, debug=True, tracking=True)
+        result = self.parser.parse(lexer = self.lexer
+                                   #, debug=True, tracking=True
+        )
         return ast.Module(None, result)
 
 
@@ -857,9 +879,11 @@ class GardenSnakeCompiler(object):
         #print  tree
         misc.set_filename(filename, tree)
         syntax.check(tree)
-        gen = pycodegen.ModuleCodeGenerator(tree)
-        code = gen.getCode()
-        return code
+        
+        #gen = pycodegen.ModuleCodeGenerator(tree)
+        #pprint.pprint(tree)
+        #code = gen.getCode()
+        return tree
 
 ####### Test code #######
     
@@ -906,11 +930,212 @@ def print_(*args):
     print "-->", " ".join(map(str,args))
 
 globals()["print"] = print_
-
-f = open('/home/mdupont/experiments/introspector/gcc_clang/example4o.py')
+filename=sys.argv[1]
+print "Going to parse %s" % filename
+f = open(filename)
 code = f.read()
 
-compiled_code = compile(code)
+compiled_code = compile(code, filename=filename)
+import types
+names ={}
 
-exec compiled_code in globals()
+node_types = (
+    "UNEXPOSED_DECL",
+    "UNEXPOSED_EXPR",
+    "TYPE_REF",
+    "TYPEDEF_DECL",
+    "INTEGER_LITERAL",
+    "FIELD_DECL",
+    "STRUCT_DECL",
+    "UNION_DECL",
+    "ENUM_CONSTANT_DECL",
+    "ENUM_DECL",
+    "BINARY_OPERATOR",
+    "VAR_DECL",
+    "ARRAY_SUBSCRIPT_EXPR",
+    "ASM_LABEL_ATTR",
+    "BINARY_OPERATOR",
+    "BREAK_STMT",
+    "CALL_EXPR",
+    "CASE_STMT",
+    "CHARACTER_LITERAL",
+    "CLASS_DECL",
+    "CLASS_TEMPLATE",
+    "CLASS_TEMPLATE_PARTIAL_SPECIALIZATION",
+    "COMPOUND_ASSIGNMENT_OPERATOR",
+    "COMPOUND_STMT",
+    "CONDITIONAL_OPERATOR",
+    "CONST_ATTR",
+    "CONSTRUCTOR",
+    "CONTINUE_STMT",
+    "CONVERSION_FUNCTION",
+    "CSTYLE_CAST_EXPR",
+    "CXX_ACCESS_SPEC_DECL",
+    "CXX_BASE_SPECIFIER",
+    "CXX_BOOL_LITERAL_EXPR",
+    "CXX_CATCH_STMT",
+    "CXX_CONST_CAST_EXPR",
+    "CXX_DELETE_EXPR",
+    "CXX_FUNCTIONAL_CAST_EXPR",
+    "CXX_METHOD",
+    "CXX_NEW_EXPR",
+    "CXX_REINTERPRET_CAST_EXPR",
+    "CXX_STATIC_CAST_EXPR",
+    "CXX_THIS_EXPR",
+    "CXX_THROW_EXPR",
+    "CXX_TRY_STMT",
+    "DECL_REF_EXPR",
+    "DECL_STMT",
+    "DEFAULT_STMT",
+    "DESTRUCTOR",
+    "DO_STMT",
+    "ENUM_CONSTANT_DECL",
+    "ENUM_DECL",
+    "FIELD_DECL",
+    "FOR_STMT",
+    "FUNCTION_DECL",
+    "FUNCTION_TEMPLATE",
+    "GNU_NULL_EXPR",
+    "GOTO_STMT",
+    "IF_STMT",
+    "INTEGER_LITERAL",
+    "LABEL_REF",
+    "LABEL_STMT",
+    "MEMBER_REF",
+    "MEMBER_REF_EXPR",
+    "NAMESPACE",
+    "NAMESPACE_REF",
+    "NULL_STMT",
+    "OVERLOADED_DECL_REF",
+    "PAREN_EXPR",
+    "PARM_DECL",
+    "PURE_ATTR",
+    "RETURN_STMT",
+    "STRING_LITERAL",
+    "STRUCT_DECL",
+    "SWITCH_STMT",
+    "TEMPLATE_NON_TYPE_PARAMETER",
+    "TEMPLATE_REF",
+    "TEMPLATE_TEMPLATE_PARAMETER",
+    "TEMPLATE_TYPE_PARAMETER",
+    "TRANSLATION_UNIT",
+    "TYPEDEF_DECL",
+    "TYPE_REF",
+    "UNARY_OPERATOR",
+    "UNEXPOSED_ATTR",
+    "UNEXPOSED_DECL",
+    "UNEXPOSED_EXPR",
+    "UNION_DECL",
+    "USING_DECLARATION",
+    "USING_DIRECTIVE",
+    "VAR_DECL",
+    "VISIBILITY_ATTR",
+    "WHILE_STMT" )
+
+def node_type(t):
+    return t
+
+values = {
+    'False': False,
+    'None': None,
+    'True': True,
+}
+
+def process_dict(x):
+
+    if isinstance(x, tuple):
+        for y in x:
+            process_dict(y)
+    elif isinstance(x, ast.Name):
+        v = None
+        
+        if x.name in node_types:
+            return node_type(x.name)
+        elif x.name in values:
+            return values[x.name]
+        else:
+            #pprint.pprint({'name':x.__dict__})
+            if x.name in names:
+                names[x.name]= names[x.name]+1
+            else:
+                names[x.name]=0
+            
+    elif isinstance(x, ast.CallFunc):
+        # this is always a call to SourceLocation
+        print 'file:'+x.args[0].value + ":" + str(x.args[1].value) + ":" + str(x.args[2].value)        
+    elif isinstance(x, ast.Const):
+        #pprint.pprint({'const':x.__dict__})
+        return x.value
+    elif isinstance(x, ast.Tuple):
+        l = []
+        for y in x.nodes:
+            v = process_dict(y)
+            l.append(v)
+        #pprint.pprint(l)
+        return l
+    elif isinstance(x, list):
+        l = []
+        for y in x:
+            v = process_dict(y)
+            l.append(v)
+        return l
+    elif isinstance(x, dict):
+        l = {}
+        for f in x:
+            v = x[f]
+            if f in ('doc','filename','lineno'):
+                pass
+            elif f in ('flags', 'name'):                
+                l[f]=v
+            else:
+                l[f]=process_dict(v)
+        pprint.pprint(l)
+        return l
+    else:
+        print type(x)
+        print x.__type__
+        
+def foo(x):
+    if not x:
+        return x
+
+    if isinstance(x, basestring):
+        print x
+        return
+    elif isinstance(x, list):
+        for y in x:
+            foo(y)
+    elif isinstance(x, dict):
+        process_dict(x)
+    else:
+        #pprint.pprint(type(x))
+        x.foo()
+        #pprint.pprint(x)
+        #pprint.pprint(x.__dict__)
+
+        for f in x.__dict__:
+            v = x.__dict__[f]
+
+            if f in ('doc','filename','lineno'):
+                pass
+            elif f in ('flags', 'name'):                
+                print f, v
+            else:              
+                #pprint.pprint( {
+                #    f : v
+                #})            
+                foo(v)
+
+ast.Module.foo=lambda x : x
+ast.Stmt.foo=lambda x : x
+ast.Assign.foo=lambda x : x
+ast.Tuple.foo=lambda x : x
+ast.Const.foo=lambda x : x
+ast.AssName.foo=lambda x : x
+
+#class 
+foo(compiled_code)
+
+pprint.pprint(names);
+
 print "Done"

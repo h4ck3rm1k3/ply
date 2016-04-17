@@ -10,6 +10,49 @@ values = {
 
 import node_types
 
+import generated_node_types
+
+seen = {}
+from path import Path
+cwd = Path.getcwd() + "/output"
+
+def foo(self):
+    
+    s= self.d['extent.start'].split(':')[1]
+    k= self.d['kind'].__name__
+    if '/usr/lib/gcc/x86_64-linux-gnu/5/plugin' in s:
+        sp= Path(s).parent
+        if sp not in seen:
+            n = cwd  + sp + "/" +k
+            n.makedirs_p()
+            print n
+            seen[s]=1
+            print s
+    #if 'tree' in self.d['extent.start']:
+    #    pprint.pprint(self.d)
+
+    #pass
+
+
+
+def install():
+    for x in generated_node_types.__dict__:
+        if (
+            ('Decl' in x) and
+            ('Expr' not in x) and
+            ('Param' not in x)
+        ):
+            v = generated_node_types.__dict__[x]
+            print "Install", x,v
+            v.foo=foo
+install()
+
+def skip(self):
+    pass
+generated_node_types.Decl.foo=skip
+generated_node_types.ParmDecl.foo = skip
+generated_node_types.DeclRefExpr=skip
+    
 def process_dict(x):
 
     if isinstance(x, tuple):
@@ -63,8 +106,11 @@ def process_dict(x):
                 l[f]=process_dict(v)
 
         if 'kind' in l :
-            pprint.pprint(l['kind'])
-            l['kind'](l)
+            #pprint.pprint(l['kind'])
+            o = l['kind'](l)
+            if o:
+                o.foo()
+            
         return l
     else:
         print type(x)

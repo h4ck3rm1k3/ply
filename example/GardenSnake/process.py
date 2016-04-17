@@ -23,7 +23,7 @@ def foo(self):
     #if '/usr/lib/gcc/x86_64-linux-gnu/5/plugin' in s:
     if '/' in s:
         sp= Path(s).parent
-        n = cwd  + sp + "/" +k
+        n = cwd  + s + "/" +k
         fn = n + "/data.py"
         mode = 'w'
         if n not in seen:
